@@ -2,41 +2,17 @@
 {
     class Read : AConnectionExecuter
     {
-        private Action<Dictionary<string, string>>? LastDisplayCall;
+        private Action<Dictionary<string, object>>? LastDisplayCall;
         public Read(Connection connection) : base(connection) { }
-
-        public override void Execute(string query)
+        
+        public void Execute(string table, string condition, string binds = "")
         {
-            SetCommand(query);
-            Execute();
+            string queryToExecute = $"SELECT * FROM {table} {condition}";
+            // Utilização de base para garantir que não sera chamado o mesmo metodo da classe Read
+            base.Execute(queryToExecute, binds);
         }
 
-        public void LastDisplay()
-        {
-            if(LastDisplayCall == null)
-            {
-                return;
-            }
-
-            Display(LastDisplayCall);
-        }
-
-        public void ExecuteLastCommand()
-        {
-            Execute();
-        }
-
-        public void Execute(string table, string condition, string? binds = "")
-        {
-            string finalQuery = $"SELECT * FROM {table} {condition}";
-
-            SetCommand(finalQuery);
-            BindValues(binds);
-
-            Execute();
-        }
-
-        public void Display(Action<Dictionary<string, string>> functionCall)
+        public void Display(Action<Dictionary<string, object>> functionCall)
         {
             if(LastDisplayCall != functionCall)
             {
@@ -52,6 +28,21 @@
             {
                 functionCall.Invoke(x);
             });
+        }
+
+        public void LastDisplay()
+        {
+            if (LastDisplayCall == null)
+            {
+                return;
+            }
+
+            Display(LastDisplayCall);
+        }
+
+        public void ExecuteLastCommand()
+        {
+            Execute(Command.CommandText);
         }
     }
 }

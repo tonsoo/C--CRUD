@@ -4,21 +4,11 @@ using MySqlX.XDevAPI.Common;
 
 namespace CRUD.Entities.Database
 {
-    abstract class AConnectionExecuter : IConnectionExecuter
+    abstract class AConnectionExecuter
     {
-        /*
-         * 
-         * Variavel Command Responsavel pelo armazenamento do comando a ser executado pela classe.
-         * 
-         */
         public MySqlCommand Command { get; protected set; } = new();
 
-        /*
-         * 
-         * Variavel Result Reponsavel por armazenar o resultado no formato de dicionario (chave: valor)
-         * 
-         */
-        public List<Dictionary<string, string>> Result { get; protected set; } = new();
+        public List<Dictionary<string, object>> Result { get; protected set; } = new();
         public bool ResultStatus { get; protected set; }
 
         public MySqlConnection Connection { get; private set; }
@@ -28,31 +18,42 @@ namespace CRUD.Entities.Database
             Connection = connection.DatabaseConnection;
         }
 
-        public abstract void Execute(string query);
-
-        protected void Execute()
+        public void Execute(string queryToExecute, string binds = "")
         {
+            ResultStatus = false;
+
+            if(queryToExecute == "")
+            {
+                throw new ArgumentException("Query to be executed cannot be empty");
+            }
+
+            SetCommand(queryToExecute);
+            if(binds != "")
+            {
+                BindValues(binds);
+            }
+
             try
             {
                 Result = new();
 
-                MySqlDataReader reader = Command.ExecuteReader();
-
-                while (reader.Read())
+                using MySqlDataReader commandReader = Command.ExecuteReader();
+                while (commandReader.Read())
                 {
-                    Dictionary<string, string> newRow = new();
+                    Dictionary<string, object> newDatabaseRow = new();
 
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    for (int i = 0; i < commandReader.FieldCount; i++)
                     {
-                        newRow.Add(reader.GetName(i), $"{reader.GetValue(i)}");
+                        string databaseKey = commandReader.GetName(i);
+                        object databaseValue = commandReader.GetValue(i);
+
+                        newDatabaseRow.Add(databaseKey, databaseValue);
                     }
 
-                    Result.Add(newRow);
+                    Result.Add(newDatabaseRow);
                 }
 
-                reader.Close();
-
-                ResultStatus = true;
+                commandReader.Close();
             }
             catch (InvalidCastException e)
             {
@@ -66,13 +67,15 @@ namespace CRUD.Entities.Database
             {
                 Console.WriteLine("MySql Error: " + e.Message);
             }
+
+            ResultStatus = true;
         }
 
-        protected void SetCommand(string query)
+        protected void SetCommand(string queryToExecute)
         {
             try
             {
-                Command = new MySqlCommand(query, Connection);
+                Command = new MySqlCommand(queryToExecute, Connection);
             }
             catch(Exception e)
             {
@@ -80,31 +83,29 @@ namespace CRUD.Entities.Database
             }
         }
 
-        protected void BindValues(string? binds = null)
+        protected void BindValues(string? stringBinds = null)
         {
             try
             {
 
-                if (binds == null)
+                if (stringBinds == null)
                 {
                     return;
                 }
 
-                List<MySqlParameter> parameters = new();
-
-                string[] queryBinds = binds.Split("&");
-                foreach (string bind in queryBinds)
+                string[] pairOfBinds = stringBinds.Split("&");
+                foreach (string pair in pairOfBinds)
                 {
-                    string[] bindValues = bind.Split("=");
-                    if (bindValues.Length != 2)
+                    string[] keyValueBind = pair.Split("=");
+                    if (keyValueBind.Length != 2)
                     {
-                        throw new DatabaseBindException("Bind does not follow key value structure.");
+                        throw new DatabaseBindException($"Bind '{pair}' does not follow key value structure.");
                     }
 
-                    string key = "@" + bindValues[0];
-                    string observeValue = bindValues[1];
+                    string bindKey = "@" + keyValueBind[0];
+                    string bindValue = keyValueBind[1];
 
-                    Command.Parameters.AddWithValue(key, observeValue);
+                    Command.Parameters.AddWithValue(bindKey, bindValue);
                 }
             }
             catch (MySqlException e)
@@ -115,8 +116,6 @@ namespace CRUD.Entities.Database
             {
                 Console.WriteLine("Bind error: " + e.Message);
             }
-
-            return;
         }
     }
 }

@@ -4,20 +4,11 @@
     {
         public Delete(Connection connection) : base(connection) { }
 
-        public override void Execute(string query)
+        public void Execute(string table, string condition, string conditionBinds = "")
         {
-            SetCommand(query);
-            Execute();
-        }
-
-        public void Execute(string table, string condition, string? conditionBinds = "")
-        {
-            string finalQuery = $"DELETE FROM {table} {condition}";
-
-            SetCommand(finalQuery);
-            BindValues(conditionBinds);
-
-            Execute();
+            string queryToExecute = $"DELETE FROM {table} {condition}";
+            // Utilização de base para garantir que não sera chamado o mesmo metodo da classe Delete
+            base.Execute(queryToExecute, conditionBinds);
         }
     }
 }

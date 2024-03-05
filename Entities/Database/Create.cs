@@ -1,59 +1,49 @@
-﻿namespace CRUD.Entities.Database
+﻿using CRUD.Entities.Exceptions;
+
+namespace CRUD.Entities.Database
 {
     class Create : AConnectionExecuter
     {
 
         public Create(Connection connection) : base(connection) { }
 
-        public override void Execute(string query)
+        public void Execute(string table, Dictionary<string, object> createValues)
         {
-            SetCommand(query);
+            int valuesLength = createValues.Keys.ToArray().Length;
 
-            Execute();
-        }
+            if (valuesLength == 0)
+            {
+                throw new DatabaseBindException("The must be at leat one value to create.");
+            }
 
-        public void Execute(string table, Dictionary<string, string> createValues)
-        {
-            string finalQuery = "";
+            string queryToExecute = "";
             string binds = "";
 
             try
             {
-                int length = createValues.Keys.ToArray().Length;
                 string valuesText = "";
                 string insertText = "";
 
-                int i = 0;
                 foreach (var item in createValues)
                 {
-                    insertText += $"{item.Key}";
-                    valuesText += $"@__Update_Bind__{item.Key}";
-                    binds += $"@__Update_Bind__{item.Key}={item.Value}";
-
-                    if (i < length - 1)
-                    {
-                        insertText += ",";
-                        valuesText += ",";
-                        binds += "&";
-                    }
-                    i++;
+                    insertText += $"{item.Key},";
+                    valuesText += $"@__Update_Bind__{item.Key},";
+                    binds += $"@__Update_Bind__{item.Key}={item.Value}&";
                 }
 
-                insertText = $"({insertText})";
-                valuesText = $"({valuesText})";
+                binds = binds[..^1];
 
-                finalQuery = $"INSERT INTO {table} {insertText} VALUES {valuesText}";
+                // Criação da string da query seguindo o padrão
+                // "INSERT INTO nome_da_tabela (valor1,valor2,valor3) VALUES ('Valor1','Valor2','Valor3')"
+                // Variavel[..^1] para remover o ultimo caractere (,) de cada variavel
+                queryToExecute = $"INSERT INTO {table} ({insertText[..^1]}) VALUES ({valuesText[..^1]})";
             }
             catch (ArgumentException e)
             {
                 Console.WriteLine("Argument error: " + e.Message);
             }
 
-            Console.WriteLine(finalQuery);
-            SetCommand(finalQuery);
-            BindValues(binds);
-
-            Execute();
+            Execute(queryToExecute, binds);
         }
     }
 }
