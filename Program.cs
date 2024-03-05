@@ -11,7 +11,6 @@ namespace CRUD
             //read = new(connection);
             //read.Execute("users", "WHERE salario LIKE @salario", "@salario=1300.%");
 
-
             //Create create = new(connection);
             //create.Execute("users", new() { { "nome", "Cleverson" }, { "salario", "4500.00" } });
 
