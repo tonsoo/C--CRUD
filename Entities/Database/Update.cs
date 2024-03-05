@@ -7,7 +7,6 @@
         public override void Execute(string query)
         {
             SetCommand(query);
-
             Execute();
         }
 

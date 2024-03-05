@@ -2,13 +2,12 @@
 {
     class Read : AConnectionExecuter
     {
-        private Action<Dictionary<string, string>> LastDisplayCall;
+        private Action<Dictionary<string, string>>? LastDisplayCall;
         public Read(Connection connection) : base(connection) { }
 
         public override void Execute(string query)
         {
             SetCommand(query);
-
             Execute();
         }
 
