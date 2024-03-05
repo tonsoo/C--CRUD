@@ -8,8 +8,9 @@ namespace CRUD
         {
             Connection connection = new("127.0.0.1", "root", "", "bank");
 
-            //read = new(connection);
-            //read.Execute("users", "WHERE salario LIKE @salario", "@salario=1300.%");
+            //Read read = new(connection);
+            //read.Execute("SELECT * FROM users");
+            //read.Execute("table", "WHERE column=@column_value", "@column_value=123");
 
             //Create create = new(connection);
             //create.Execute("users", new() { { "nome", "Cleverson" }, { "salario", "4500.00" } });
