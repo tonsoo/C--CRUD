@@ -2,7 +2,6 @@
 {
     class Update : AConnectionExecuter
     {
-
         public Update(Connection connection) : base(connection) { }
 
         public override void Execute(string query)

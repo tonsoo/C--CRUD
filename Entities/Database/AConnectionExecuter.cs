@@ -1,10 +1,16 @@
 ﻿using CRUD.Entities.Exceptions;
 using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI.Common;
 
 namespace CRUD.Entities.Database
 {
     abstract class AConnectionExecuter : IConnectionExecuter
     {
+        /*
+         * 
+         * Variavel Command Responsavel pelo armazenamento do comando a ser executado pela classe.
+         * 
+         */
         public MySqlCommand Command { get; protected set; } = new();
         public List<Dictionary<string, string>> Result { get; protected set; } = new();
         public bool ResultStatus { get; protected set; }
@@ -22,6 +28,8 @@ namespace CRUD.Entities.Database
         {
             try
             {
+                Result = new();
+
                 MySqlDataReader reader = Command.ExecuteReader();
 
                 while (reader.Read())
