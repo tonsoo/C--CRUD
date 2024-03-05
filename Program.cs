@@ -6,8 +6,6 @@ namespace CRUD
     {
         public static void Main()
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
             Connection connection = new("127.0.0.1", "root", "", "bank");
 
             //read = new(connection);
@@ -21,12 +19,6 @@ namespace CRUD
 
             //Delete delete = new(connection);
             //delete.Execute("users", "WHERE nome = @nome", "nome=Teste Create1");
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            Console.WriteLine();
-            Console.WriteLine("Execution time: " + elapsedMs + "ms");
         }
     }
 }
