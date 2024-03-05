@@ -12,6 +12,12 @@ namespace CRUD.Entities.Database
          * 
          */
         public MySqlCommand Command { get; protected set; } = new();
+
+        /*
+         * 
+         * Variavel Result Reponsavel por armazenar o resultado no formato de dicionario (chave: valor)
+         * 
+         */
         public List<Dictionary<string, string>> Result { get; protected set; } = new();
         public bool ResultStatus { get; protected set; }
 
